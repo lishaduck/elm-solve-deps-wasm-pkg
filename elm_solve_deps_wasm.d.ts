@@ -26,9 +26,9 @@ export function init(): void;
 * If the `elm.json` cannot be decoded, it will panic.
 * @param {string} project_elm_json_str
 * @param {boolean} use_test
-* @param {any} additional_constraints_str
-* @param {Function} js_fetch_elm_json
-* @param {Function} js_list_available_versions
-* @returns {any}
+* @param {Record<string, string>} additional_constraints_str
+* @param {(pkg: string, version: string) => string} js_fetch_elm_json
+* @param {(pkg: string) => string[]} js_list_available_versions
+* @returns {string}
 */
-export function solve_deps(project_elm_json_str: string, use_test: boolean, additional_constraints_str: any, js_fetch_elm_json: Function, js_list_available_versions: Function): any;
+export function solve_deps(project_elm_json_str: string, use_test: boolean, additional_constraints_str: Record<string, string>, js_fetch_elm_json: (pkg: string, version: string) => string, js_list_available_versions: (pkg: string) => string[]): string;

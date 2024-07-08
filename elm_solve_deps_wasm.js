@@ -204,6 +204,13 @@ module.exports.init = function() {
     wasm.init();
 };
 
+let stack_pointer = 128;
+
+function addBorrowedObject(obj) {
+    if (stack_pointer == 1) throw new Error('out of js stack');
+    heap[--stack_pointer] = obj;
+    return stack_pointer;
+}
 /**
 * Solve dependencies for the provided `elm.json`.
 *
@@ -221,26 +228,37 @@ module.exports.init = function() {
 * If the `elm.json` cannot be decoded, it will panic.
 * @param {string} project_elm_json_str
 * @param {boolean} use_test
-* @param {any} additional_constraints_str
-* @param {Function} js_fetch_elm_json
-* @param {Function} js_list_available_versions
-* @returns {any}
+* @param {Record<string, string>} additional_constraints_str
+* @param {(pkg: string, version: string) => string} js_fetch_elm_json
+* @param {(pkg: string) => string[]} js_list_available_versions
+* @returns {string}
 */
 module.exports.solve_deps = function(project_elm_json_str, use_test, additional_constraints_str, js_fetch_elm_json, js_list_available_versions) {
+    let deferred3_0;
+    let deferred3_1;
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
         const ptr0 = passStringToWasm0(project_elm_json_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        wasm.solve_deps(retptr, ptr0, len0, use_test, addHeapObject(additional_constraints_str), addHeapObject(js_fetch_elm_json), addHeapObject(js_list_available_versions));
+        wasm.solve_deps(retptr, ptr0, len0, use_test, addHeapObject(additional_constraints_str), addBorrowedObject(js_fetch_elm_json), addBorrowedObject(js_list_available_versions));
         var r0 = getInt32Memory0()[retptr / 4 + 0];
         var r1 = getInt32Memory0()[retptr / 4 + 1];
         var r2 = getInt32Memory0()[retptr / 4 + 2];
-        if (r2) {
-            throw takeObject(r1);
+        var r3 = getInt32Memory0()[retptr / 4 + 3];
+        var ptr2 = r0;
+        var len2 = r1;
+        if (r3) {
+            ptr2 = 0; len2 = 0;
+            throw takeObject(r2);
         }
-        return takeObject(r0);
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
+        heap[stack_pointer++] = undefined;
+        heap[stack_pointer++] = undefined;
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
     }
 };
 
